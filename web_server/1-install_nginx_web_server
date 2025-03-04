@@ -1,42 +1,20 @@
 #!/usr/bin/env bash
-# Install nginx web server
+# This script installs Nginx and configures it to listen on port 80
 
-# Update package list and install nginx
-apt-get update
-apt-get install -y nginx
+# Update package list
+apt-get update -y
 
-# Ensure nginx is configured to listen on port 80 (default behavior)
-# Create an HTML file to ensure the correct response
+# Install Nginx web server
+apt-get install nginx -y
+
+# Ensure Nginx is running and accepting traffic on port 80
+service nginx start
+
+# Create a custom HTML page that contains "Holberton School"
 echo "Holberton School for the win!" > /var/www/html/index.html
 
-# Start Nginx (without using systemctl)
-nginx
+# Adjust the Nginx configuration to ensure it listens on port 80 (default)
+sed -i 's/listen 80 default_server;/listen 80;/' /etc/nginx/sites-available/default
 
-# Check if nginx is listening on port 80
-if ! netstat -tuln | grep ':80'; then
-  echo "Error: Nginx is not listening on port 80"
-  exit 1
-fi
-
-# Check if the HTML page is accessible
-RESPONSE=$(curl -s localhost)
-
-# Check if the page contains the required text
-if [[ "$RESPONSE" == *"Holberton School for the win!"* ]]; then
-  echo "Nginx is serving the correct page."
-else
-  echo "Error: Nginx did not return the correct content."
-  echo "Response: $RESPONSE"
-  exit 1
-fi
-
-# Confirm Nginx is returning HTTP 200 OK
-HTTP_STATUS=$(curl -sI localhost | head -n 1)
-
-if [[ "$HTTP_STATUS" == "HTTP/1.1 200 OK" ]]; then
-  echo "Nginx returned HTTP 200 OK."
-else
-  echo "Error: Nginx did not return HTTP 200."
-  echo "HTTP Status: $HTTP_STATUS"
-  exit 1
-fi
+# Restart Nginx to apply changes (without using systemctl)
+nginx -s reload
