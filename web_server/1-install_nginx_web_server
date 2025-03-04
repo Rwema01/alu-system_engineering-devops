@@ -9,22 +9,34 @@ apt-get install -y nginx
 # Create an HTML file to ensure the correct response
 echo "Holberton School for the win!" > /var/www/html/index.html
 
-# Start Nginx without using systemctl
+# Start Nginx (without using systemctl)
 nginx
 
-# Confirm that nginx is listening on port 80
+# Check if nginx is listening on port 80
 if ! netstat -tuln | grep ':80'; then
   echo "Error: Nginx is not listening on port 80"
   exit 1
 fi
 
-# Test that Nginx returns the correct status code
-RESPONSE=$(curl -sI localhost | head -n 1)
+# Check if the HTML page is accessible
+RESPONSE=$(curl -s localhost)
 
-if [[ "$RESPONSE" == "HTTP/1.1 200 OK" ]]; then
-  echo "Nginx is working correctly"
+# Check if the page contains the required text
+if [[ "$RESPONSE" == *"Holberton School for the win!"* ]]; then
+  echo "Nginx is serving the correct page."
 else
-  echo "Error: Nginx did not return HTTP 200"
+  echo "Error: Nginx did not return the correct content."
   echo "Response: $RESPONSE"
+  exit 1
+fi
+
+# Confirm Nginx is returning HTTP 200 OK
+HTTP_STATUS=$(curl -sI localhost | head -n 1)
+
+if [[ "$HTTP_STATUS" == "HTTP/1.1 200 OK" ]]; then
+  echo "Nginx returned HTTP 200 OK."
+else
+  echo "Error: Nginx did not return HTTP 200."
+  echo "HTTP Status: $HTTP_STATUS"
   exit 1
 fi
